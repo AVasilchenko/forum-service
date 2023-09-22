@@ -1,6 +1,7 @@
 package telran.java48.account.dto;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.Getter;
 
@@ -9,5 +10,5 @@ public class UserDto {
 	String login;
     String firstName;
     String lastName;
-    List<String> roles;
+    Set<String> roles;
 }

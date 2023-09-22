@@ -1,7 +1,9 @@
 package telran.java48.account.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 
@@ -23,7 +25,7 @@ public class User {
 	@Setter
     String lastName;
 	@Setter
-    List<String> roles = new ArrayList<>();
+    Set<String> roles = new HashSet<>();
     
     
 	public User(String login, String password, String firstName, String lastName) {
@@ -31,16 +33,15 @@ public class User {
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.roles = new ArrayList<String>();
 		this.roles.add("USER");
 	}
     
-	public void addRole(String role) {
-		roles.add(role.toUpperCase());
+	public Boolean addRole(String role) {
+		return roles.add(role.toUpperCase());
 	}
 	
-	public void deleteRole(String role) {
-		roles.remove(role.toUpperCase());
+	public Boolean deleteRole(String role) {
+		return roles.remove(role.toUpperCase());
 	}
     
 }

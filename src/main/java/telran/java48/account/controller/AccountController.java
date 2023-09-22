@@ -27,10 +27,10 @@ final AccountService accountService;
 		return accountService.register(userCreateDto);
 	}
 
-	@PostMapping("/login")
-	public UserDto login() {
-		return accountService.login();
-	}
+//	@PostMapping("/login")
+//	public UserDto login(String login, String password) {
+//		return accountService.login(login, password);
+//	}
 
 	@DeleteMapping("/user/{login}")
 	public UserDto deleteUser(@PathVariable String login) {
@@ -44,17 +44,17 @@ final AccountService accountService;
 
 	@PutMapping("/user/{login}/role/{role}")
 	public ChangeRolesDto addRole(@PathVariable String login,@PathVariable String role) {
-		return accountService.addRole(login, role);
+		return accountService.changeRole(login, role, true);
 	}
 
 	@DeleteMapping("/user/{login}/role/{role}")
 	public ChangeRolesDto deletRole(@PathVariable String login,@PathVariable String role) {
-		return accountService.deletRole(login, role);
+		return accountService.changeRole(login, role, false);
 	}
 
 	@PutMapping("/password")
-	public Boolean changePassword() {
-		return accountService.changePassword();
+	public void changePassword(String login, String newPassword) {
+		accountService.changePassword(login, newPassword);
 	}
 
 	@GetMapping("/user/{login}")
