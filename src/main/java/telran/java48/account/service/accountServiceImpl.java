@@ -1,6 +1,7 @@
 package telran.java48.account.service;
 
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import telran.java48.account.model.User;
 
 @Service
 @RequiredArgsConstructor
-public class UserAccountServiceImpl implements AccountService {
+public class accountServiceImpl implements AccountService {
 	final ModelMapper modelMapper;
 	final UserRepository userRepository;
 	
@@ -28,6 +29,8 @@ public class UserAccountServiceImpl implements AccountService {
 		}
 		User user = modelMapper.map(userCreateDto, User.class);
 		user.addRole("USER");
+		String password = BCrypt.hashpw(userCreateDto.getPassword(), BCrypt.gensalt());
+		user.setPassword(password);
 		user = userRepository.save(user);
 		return modelMapper.map(user, UserDto.class);
 	}
