@@ -1,4 +1,4 @@
-package telran.java48.account.dto.exception;
+ package telran.java48.account.dto.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -6,9 +6,4 @@ import telran.java48.account.model.User;
 
 public interface UserRepository extends MongoRepository<User, String> {
 	
-	Boolean existsByLogin(String login);
-	
-	User findByLogin(String login);
-	
-	Long deleteByLogin(String login);
 }

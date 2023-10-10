@@ -3,6 +3,7 @@ package telran.java48.account.service;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,8 @@ import telran.java48.account.model.User;
 
 @Service
 @RequiredArgsConstructor
-public class accountServiceImpl implements AccountService {
+public class accountServiceImpl implements AccountService, CommandLineRunner{
+	
 	final ModelMapper modelMapper;
 	final UserRepository userRepository;
 	
@@ -45,7 +47,7 @@ public class accountServiceImpl implements AccountService {
 	@Override
 	public UserDto deleteUser(String login) {
 		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		userRepository.deleteByLogin(login);
+		userRepository.deleteById(login);
 		return modelMapper.map(user, UserDto.class);
 	}
 
@@ -68,7 +70,6 @@ public class accountServiceImpl implements AccountService {
 		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 		user.setPassword(password);
-		user.setPassword(newPassword);
 		userRepository.save(user);
 	}
 
@@ -79,14 +80,27 @@ public class accountServiceImpl implements AccountService {
 		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		boolean res;
 		if(isAddRole) {
-			res = user.addRole(role);
+			res = user.addRole(role.toUpperCase());
 		} else {
-			res = user.deleteRole(role);
+			res = user.deleteRole(role.toUpperCase());
 		}
 		if (res) {
 			userRepository.save(user);
 		}
 		return modelMapper.map(user, ChangeRolesDto.class);
+	}
+	
+	@Override
+	public void run(String... args) throws Exception{
+		if (!userRepository.existsById("admin")) {
+			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
+			User user = new User("admin", password, "", "");
+			user.addRole("USER");
+			user.addRole("MODERATOR");
+			user.addRole("ADMINISTRATOR");
+			userRepository.save(user);
+			
+		}
 	}
 
 }
