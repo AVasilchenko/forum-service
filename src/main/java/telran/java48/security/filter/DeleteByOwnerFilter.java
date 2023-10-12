@@ -18,12 +18,12 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import telran.java48.account.dao.UserRepository;
 import telran.java48.account.model.User;
+import telran.java48.security.model.Role;
+import telran.java48.security.model.UserPr;
 
 @Component
 @Order(40)
-@RequiredArgsConstructor  
 public class DeleteByOwnerFilter implements Filter{
-	final UserRepository userRepository;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -32,11 +32,10 @@ public class DeleteByOwnerFilter implements Filter{
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		if (checkEndPoint(request.getMethod(), request.getServletPath())) {
-			Principal principal = request.getUserPrincipal();
-			User user = userRepository.findById(principal.getName()).get();
+			UserPr user = (UserPr) request.getUserPrincipal();
 			String[] arr = request.getServletPath().split("/");
 			String login = arr[arr.length - 1];
-			if((!principal.getName().equalsIgnoreCase(login)) && (!user.getRoles().contains("ADMINISTRATOR"))) {
+			if((!user.getName().equalsIgnoreCase(login)) && (!user.getRoles().contains(Role.ADMINISTRATOR))) {
 				response.sendError(403);
 				return;
 			}

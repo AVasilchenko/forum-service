@@ -20,13 +20,14 @@ import telran.java48.account.dao.UserRepository;
 import telran.java48.account.model.User;
 import telran.java48.forum.dao.ForumRepository;
 import telran.java48.forum.model.Post;
+import telran.java48.security.model.Role;
+import telran.java48.security.model.UserPr;
 
 @Component
-@Order(70)
+@Order(60)
 @RequiredArgsConstructor
 public class DeletePostByOwnerModeratorFilter implements Filter {
 	final ForumRepository forumRepository;
-	final UserRepository userRepository;
 	
 	
 	@Override
@@ -36,12 +37,15 @@ public class DeletePostByOwnerModeratorFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		if (checkEndPoint(request.getMethod(), request.getServletPath())) {
-			Principal principal = request.getUserPrincipal();
+			UserPr user = (UserPr) request.getUserPrincipal();
 			String[] arr = request.getServletPath().split("/");
 			String id = arr[arr.length - 1];
-			Post post = forumRepository.findById(id).get();
-			User user = userRepository.findById(principal.getName()).get();
-			if((!principal.getName().equalsIgnoreCase(post.getAuthor())) && (!user.getRoles().contains("MODERATOR"))) {
+			Post post = forumRepository.findById(id).orElse(null);
+			if(post == null) {
+				response.sendError(404);
+				return;
+			}
+			if((!user.getName().equalsIgnoreCase(post.getAuthor())) && (!user.getRoles().contains(Role.MODERATOR))) {
 				response.sendError(403);
 				return;
 			}

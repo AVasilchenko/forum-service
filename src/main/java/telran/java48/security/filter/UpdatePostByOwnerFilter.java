@@ -21,7 +21,7 @@ import telran.java48.forum.dao.ForumRepository;
 import telran.java48.forum.model.Post;
 
 @Component
-@Order(60)
+@Order(50)
 @RequiredArgsConstructor
 public class UpdatePostByOwnerFilter implements Filter {
 	final ForumRepository forumRepository;
@@ -36,8 +36,12 @@ public class UpdatePostByOwnerFilter implements Filter {
 			Principal principal = request.getUserPrincipal();
 			String[] arr = request.getServletPath().split("/");
 			String id = arr[arr.length - 1];
-			Post post = forumRepository.findById(id).get();
-			if(!principal.getName().equalsIgnoreCase(post.getAuthor())) {
+			Post post = forumRepository.findById(id).orElse(null);
+			if(post == null) {
+				response.sendError(404);
+				return;
+			}
+			if (!principal.getName().equalsIgnoreCase(post.getAuthor())) {
 				response.sendError(403);
 				return;
 			}

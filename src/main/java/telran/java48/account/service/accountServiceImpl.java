@@ -15,6 +15,7 @@ import telran.java48.account.dto.UserUpdateDto;
 import telran.java48.account.dto.exception.UserExistsException;
 import telran.java48.account.dto.exception.UserNotFoundException;
 import telran.java48.account.model.User;
+import telran.java48.security.model.Role;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 			throw new UserExistsException();
 		}
 		User user = modelMapper.map(userCreateDto, User.class);
-		user.addRole("USER");
+		user.addRole(Role.USER);
 		String password = BCrypt.hashpw(userCreateDto.getPassword(), BCrypt.gensalt());
 		user.setPassword(password);
 		user = userRepository.save(user);
@@ -76,13 +77,13 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	
 
 	@Override
-	public ChangeRolesDto changeRole(String login, String role, Boolean isAddRole) {
+	public ChangeRolesDto changeRole(String login, Role role, Boolean isAddRole) {
 		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		boolean res;
 		if(isAddRole) {
-			res = user.addRole(role.toUpperCase());
+			res = user.addRole(role);
 		} else {
-			res = user.deleteRole(role.toUpperCase());
+			res = user.deleteRole(role);
 		}
 		if (res) {
 			userRepository.save(user);
@@ -95,9 +96,9 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 		if (!userRepository.existsById("admin")) {
 			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
 			User user = new User("admin", password, "", "");
-			user.addRole("USER");
-			user.addRole("MODERATOR");
-			user.addRole("ADMINISTRATOR");
+			user.addRole(Role.ADMINISTRATOR);
+			user.addRole(Role.MODERATOR);
+			user.addRole(Role.USER);
 			userRepository.save(user);
 			
 		}

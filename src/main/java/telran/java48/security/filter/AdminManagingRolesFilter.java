@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import telran.java48.account.dao.UserRepository;
 import telran.java48.account.model.User;
+import telran.java48.security.model.Role;
+import telran.java48.security.model.UserPr;
 
 @Component
-@Order(20)
-@RequiredArgsConstructor  
+@Order(20) 
 public class AdminManagingRolesFilter implements Filter {
-	final UserRepository userRepository;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -31,9 +31,8 @@ public class AdminManagingRolesFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 	
 		if (checkEndPoint(request.getMethod(), request.getServletPath())) {
-			Principal principal = request.getUserPrincipal();
-			User user = userRepository.findById(principal.getName()).get();
-			if(!user.getRoles().contains("ADMINISTRATOR")) {
+			UserPr user = (UserPr)request.getUserPrincipal();
+			if(!user.getRoles().contains(Role.ADMINISTRATOR)) {
 				response.sendError(403, "Permission denied");
 				return;
 			}

@@ -3,6 +3,7 @@ package telran.java48.security.filter;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Base64;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import telran.java48.account.dao.UserRepository;
 import telran.java48.account.model.User;
+import telran.java48.security.context.SecurityContext;
+import telran.java48.security.model.Role;
+import telran.java48.security.model.UserPr;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ import telran.java48.account.model.User;
 public class AuthenticationFilter implements Filter {
 
 	final UserRepository userRepository;
+	final SecurityContext securityContext;
 	
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -37,17 +42,24 @@ public class AuthenticationFilter implements Filter {
 //		System.out.println(request.getServletPath() + " -> " + request.getMethod());
 	//	System.out.println(request.getHeader("Authorization"));
 		if (checkEndPoint(request.getMethod(), request.getServletPath())) {
-			try {
-				String[] credentials = getCredentials(request.getHeader("Authorization"));
-				User user = userRepository.findById(credentials[0]).orElseThrow(RuntimeException::new);
-				if (!BCrypt.checkpw(credentials[1], user.getPassword())) {
-					throw new RuntimeException();
-				}
-				request = new WrappedRequest(request, user.getLogin());
-			} catch (Exception e) {
-				response.sendError(401);
-				return;
-			} 
+			String sessionId = request.getSession().getId();
+			UserPr user = securityContext.getUserBySessionId(sessionId);
+			if (user == null) {
+				try {
+					String[] credentials = getCredentials(request.getHeader("Authorization"));
+					User userAccount = userRepository.findById(credentials[0]).orElseThrow(RuntimeException::new);
+					if (!BCrypt.checkpw(credentials[1], userAccount.getPassword())) {
+						throw new RuntimeException();
+					}
+					user = new UserPr(userAccount.getLogin(), userAccount.getRoles());
+					securityContext.addUserSession(sessionId, user);
+					
+				} catch (Exception e) {
+					response.sendError(401);
+					return;
+				} 
+			}
+			request = new WrappedRequest(request, user.getName(), user.getRoles());
 			
 		}
 		chain.doFilter(request, response);
@@ -56,9 +68,10 @@ public class AuthenticationFilter implements Filter {
 
 	private boolean checkEndPoint(String method, String path) {
 		
-		return !(HttpMethod.POST.matches(method) && path.matches("/account/register/?")) && 
-			   !(HttpMethod.POST.matches(method) && path.matches("/forum/posts/?\\w+/?")) &&
-			   !(HttpMethod.GET.matches(method) && path.matches("/forum/posts/author/?\\w+/?"));
+		return !(
+				(HttpMethod.POST.matches(method) && path.matches("/account/register/?")) 
+				|| path.matches("/forum/posts/\\w+(/\\w+)?/?")
+				);
 	}
 
 	private String[] getCredentials(String header) {
@@ -69,15 +82,17 @@ public class AuthenticationFilter implements Filter {
 
 	private class WrappedRequest extends HttpServletRequestWrapper{
 		String login;
+		Set<Role> roles;
 
-		public WrappedRequest(HttpServletRequest request, String login) {
+		public WrappedRequest(HttpServletRequest request, String login, Set<Role> roles) {
 			super(request);
 			this.login = login;
+			this.roles = roles;
 		}
 		
 		@Override
 		public Principal getUserPrincipal() {
-			return () -> login;
+			return new UserPr(login, roles);
 		}
 		
 	}

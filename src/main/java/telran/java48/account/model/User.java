@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import telran.java48.security.model.Role;
 
 @Getter
 @EqualsAndHashCode(of = "login")
@@ -25,7 +26,7 @@ public class User {
 	@Setter
     String lastName;
 	@Setter
-    Set<String> roles = new HashSet<>();
+    Set<Role> roles = new HashSet<>();
     
     
 	public User(String login, String password, String firstName, String lastName) {
@@ -33,15 +34,15 @@ public class User {
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.roles.add("USER");
+		this.roles.add(Role.USER);
 	}
     
-	public Boolean addRole(String role) {
-		return roles.add(role.toUpperCase());
+	public Boolean addRole(Role role) {
+		return roles.add(role);
 	}
 	
-	public Boolean deleteRole(String role) {
-		return roles.remove(role.toUpperCase());
+	public Boolean deleteRole(Role role) {
+		return roles.remove(role);
 	}
     
 }
