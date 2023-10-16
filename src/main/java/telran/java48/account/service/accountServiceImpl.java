@@ -14,8 +14,8 @@ import telran.java48.account.dto.UserDto;
 import telran.java48.account.dto.UserUpdateDto;
 import telran.java48.account.dto.exception.UserExistsException;
 import telran.java48.account.dto.exception.UserNotFoundException;
-import telran.java48.account.model.User;
-import telran.java48.security.model.Role;
+import telran.java48.account.model.UserAccount;
+
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +30,8 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 		if(userRepository.existsById(userCreateDto.getLogin())) {
 			throw new UserExistsException();
 		}
-		User user = modelMapper.map(userCreateDto, User.class);
-		user.addRole(Role.USER);
+		UserAccount user = modelMapper.map(userCreateDto, UserAccount.class);
+		user.addRole("USER");
 		String password = BCrypt.hashpw(userCreateDto.getPassword(), BCrypt.gensalt());
 		user.setPassword(password);
 		user = userRepository.save(user);
@@ -40,21 +40,21 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 
 	@Override
 	public UserDto getUser(String login) {
-		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		return modelMapper.map(user, UserDto.class);	
 	}
 	
 
 	@Override
 	public UserDto deleteUser(String login) {
-		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		userRepository.deleteById(login);
 		return modelMapper.map(user, UserDto.class);
 	}
 
 	@Override
 	public UserDto updateUser(UserUpdateDto userUpdateDto, String login) {
-		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		if (userUpdateDto.getFirstName() != null) {
 			user.setFirstName(userUpdateDto.getFirstName());
 		}
@@ -68,7 +68,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 
 	@Override
 	public void changePassword(String login, String newPassword) {
-		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 		user.setPassword(password);
 		userRepository.save(user);
@@ -77,13 +77,13 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	
 
 	@Override
-	public ChangeRolesDto changeRole(String login, Role role, Boolean isAddRole) {
-		User user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
+	public ChangeRolesDto changeRole(String login, String role, Boolean isAddRole) {
+		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		boolean res;
 		if(isAddRole) {
-			res = user.addRole(role);
+			res = user.addRole(role.toUpperCase());
 		} else {
-			res = user.deleteRole(role);
+			res = user.deleteRole(role.toUpperCase());
 		}
 		if (res) {
 			userRepository.save(user);
@@ -95,10 +95,10 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	public void run(String... args) throws Exception{
 		if (!userRepository.existsById("admin")) {
 			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
-			User user = new User("admin", password, "", "");
-			user.addRole(Role.ADMINISTRATOR);
-			user.addRole(Role.MODERATOR);
-			user.addRole(Role.USER);
+			UserAccount user = new UserAccount("admin", password, "", "");
+			user.addRole("ADMINISTRATOR");
+			user.addRole("MODERATOR");
+			user.addRole("USER");
 			userRepository.save(user);
 			
 		}

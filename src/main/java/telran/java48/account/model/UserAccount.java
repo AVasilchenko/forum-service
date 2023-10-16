@@ -11,12 +11,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import telran.java48.security.model.Role;
+
 
 @Getter
 @EqualsAndHashCode(of = "login")
 @NoArgsConstructor
-public class User {
+public class UserAccount {
 	@Id
 	String login;
 	@Setter
@@ -26,22 +26,22 @@ public class User {
 	@Setter
     String lastName;
 	@Setter
-    Set<Role> roles = new HashSet<>();
+    Set<String> roles = new HashSet<>();
     
     
-	public User(String login, String password, String firstName, String lastName) {
+	public UserAccount(String login, String password, String firstName, String lastName) {
 		this.login = login;
 		this.password = password;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.roles.add(Role.USER);
+		this.roles.add("USER");
 	}
     
-	public Boolean addRole(Role role) {
+	public Boolean addRole(String role) {
 		return roles.add(role);
 	}
 	
-	public Boolean deleteRole(Role role) {
+	public Boolean deleteRole(String role) {
 		return roles.remove(role);
 	}
     
