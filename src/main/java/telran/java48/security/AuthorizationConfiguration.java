@@ -1,0 +1,37 @@
+package telran.java48.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
+
+@Configuration
+public class AuthorizationConfiguration {
+	
+	@Bean
+	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+		http.httpBasic(Customizer.withDefaults());
+		http.csrf(csrf -> csrf.disable());
+		http.authorizeRequests(authorize -> authorize
+				.mvcMatchers("/account/register")
+					.permitAll()
+				.mvcMatchers("/account/user/{login}/role/{role}")
+					.hasRole("ADMINISTRATOR")
+				.mvcMatchers(HttpMethod.PUT, "/account/user/{login}")
+					.access("#login == authentication.name")
+				.mvcMatchers(HttpMethod.DELETE, "/account/user/{login}")
+					.access("#login == authentication.name or hasRole ('ADMINISTRATOR')")
+				.mvcMatchers(HttpMethod.POST, "/forum/post/{author}")
+					.access("#author == authentication.name")
+				.mvcMatchers("/forum/post/{id}/comment/{author}")
+					.access("#author == authentication.name")
+				.anyRequest()
+					.authenticated()
+				);
+		return http.build();
+	}
+
+}
