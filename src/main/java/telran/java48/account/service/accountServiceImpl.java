@@ -1,9 +1,10 @@
 package telran.java48.account.service;
 
 
-import org.mindrot.jbcrypt.BCrypt;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	
 	final ModelMapper modelMapper;
 	final UserRepository userRepository;
+	final PasswordEncoder passwordEncoder;
 	
 	
 	@Override
@@ -32,7 +34,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 		}
 		UserAccount user = modelMapper.map(userCreateDto, UserAccount.class);
 		user.addRole("USER");
-		String password = BCrypt.hashpw(userCreateDto.getPassword(), BCrypt.gensalt());
+		String password = passwordEncoder.encode(userCreateDto.getPassword());
 		user.setPassword(password);
 		user = userRepository.save(user);
 		return modelMapper.map(user, UserDto.class);
@@ -69,7 +71,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	@Override
 	public void changePassword(String login, String newPassword) {
 		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+		String password = passwordEncoder.encode(newPassword);
 		user.setPassword(password);
 		userRepository.save(user);
 	}
@@ -94,7 +96,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 	@Override
 	public void run(String... args) throws Exception{
 		if (!userRepository.existsById("admin")) {
-			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
+			String password = passwordEncoder.encode("admin");
 			UserAccount user = new UserAccount("admin", password, "", "");
 			user.addRole("ADMINISTRATOR");
 			user.addRole("MODERATOR");
