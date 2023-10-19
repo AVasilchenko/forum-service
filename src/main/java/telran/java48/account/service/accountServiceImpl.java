@@ -105,6 +105,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 			user.addRole("ADMINISTRATOR");
 			user.addRole("MODERATOR");
 			user.addRole("USER");
+			user.setDatePasswordExp(LocalDate.now().plusDays(60));
 			userRepository.save(user);
 			
 		}
