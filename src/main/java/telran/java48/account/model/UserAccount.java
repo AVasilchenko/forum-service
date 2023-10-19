@@ -1,5 +1,6 @@
 package telran.java48.account.model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +28,8 @@ public class UserAccount {
     String lastName;
 	@Setter
     Set<String> roles = new HashSet<>();
-    
+    @Setter
+    LocalDate datePasswordExp;
     
 	public UserAccount(String login, String password, String firstName, String lastName) {
 		this.login = login;
@@ -35,6 +37,7 @@ public class UserAccount {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.roles.add("USER");
+		this.datePasswordExp = LocalDate.now().plusDays(60);
 	}
     
 	public Boolean addRole(String role) {

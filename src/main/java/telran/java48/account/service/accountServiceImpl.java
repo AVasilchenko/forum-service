@@ -2,6 +2,8 @@ package telran.java48.account.service;
 
 
 
+import java.time.LocalDate;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +38,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 		user.addRole("USER");
 		String password = passwordEncoder.encode(userCreateDto.getPassword());
 		user.setPassword(password);
+		user.setDatePasswordExp(LocalDate.now().plusDays(60));
 		user = userRepository.save(user);
 		return modelMapper.map(user, UserDto.class);
 	}
@@ -73,6 +76,7 @@ public class accountServiceImpl implements AccountService, CommandLineRunner{
 		UserAccount user = userRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		String password = passwordEncoder.encode(newPassword);
 		user.setPassword(password);
+		user.setDatePasswordExp(LocalDate.now().plusDays(60));
 		userRepository.save(user);
 	}
 

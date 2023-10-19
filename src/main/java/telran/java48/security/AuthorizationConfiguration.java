@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 
@@ -15,6 +16,7 @@ public class AuthorizationConfiguration {
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		http.httpBasic(Customizer.withDefaults());
 		http.csrf(csrf -> csrf.disable());
+		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.authorizeRequests(authorize -> authorize
 				.mvcMatchers("/account/register", "/forum/posts/**")
 					.permitAll()
@@ -32,6 +34,8 @@ public class AuthorizationConfiguration {
 					.access("@customWebSecurity.checkPostAuthor(#id, authentication.name)")
 				.mvcMatchers(HttpMethod.DELETE, "/forum/post/{id}")
 					.access("@customWebSecurity.checkPostAuthor(#id, authentication.name) or hasRole('MODERATOR')")
+				.mvcMatchers("/account/user/{login}", "/forum/post/**")
+					.access("@dateWebSecurity.checkDatePassword(authentication.name)")
 				.anyRequest()
 					.authenticated()
 				);
